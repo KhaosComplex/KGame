@@ -1,10 +1,10 @@
 // Copyright 1998-2018 Epic Games, Inc. All Rights Reserved.
 
-#include "KGameGameMode.h"
-#include "KGameCharacter.h"
+#include "KGameMode.h"
+#include "KCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 
-AKGameGameMode::AKGameGameMode()
+AKGameMode::AKGameMode()
 {
 	// set default pawn class to our Blueprinted character
 	static ConstructorHelpers::FClassFinder<APawn> PlayerPawnBPClass(TEXT("/Game/ThirdPersonCPP/Blueprints/ThirdPersonCharacter"));
