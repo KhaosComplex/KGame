@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "KCharacter.generated.h"
 
+// Multicast delegates
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, const class AKCharacter*, Character);
+
 UCLASS(config=Game)
 class AKCharacter : public ACharacter
 {
@@ -18,8 +21,10 @@ class AKCharacter : public ACharacter
 	/** Follow camera */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FollowCamera;
+
 public:
 	AKCharacter();
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category=Camera)
@@ -30,10 +35,6 @@ public:
 	float BaseLookUpRate;
 
 protected:
-
-	/** Resets HMD orientation in VR. */
-	void OnResetVR();
-
 	/** Called for forwards/backward input */
 	void MoveForward(float Value);
 
@@ -68,5 +69,36 @@ public:
 	FORCEINLINE class USpringArmComponent* GetCameraBoom() const { return CameraBoom; }
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
+
+///////////////////
+// Health
+///////////////////
+
+public:
+	UFUNCTION(BlueprintPure, Category = "Health")
+	virtual float GetHealth() const;
+	UFUNCTION(BlueprintPure, Category = "Health")
+	virtual float GetMaxHealth() const;
+	UFUNCTION(BlueprintPure, Category = "Health")
+	float GetHealthPct() const;
+
+	DECLARE_EVENT_OneParam(AKCharacter, FOnHealthChangedNative, const class AKCharacter*);
+	FOnHealthChangedNative& OnHealthChangedNative() { return OnHealthChangedNativeDelegate; }
+	FOnHealthChanged& OnHealthChanged() { return OnHealthChangedDelegate; }
+
+protected:
+	UFUNCTION()
+	virtual void OnRep_Health();
+	void BroadcastHealthChanged();
+
+	UPROPERTY(EditDefaultsOnly, DisplayName = "Health", Category = "Health", ReplicatedUsing = OnRep_Health)
+	float fHealth;
+	UPROPERTY(EditDefaultsOnly, DisplayName = "MaxHealth", Category = "Health", ReplicatedUsing = OnRep_Health)
+	float fCachedMaxHealth;
+
+private:
+	FOnHealthChangedNative OnHealthChangedNativeDelegate;
+	UPROPERTY(BlueprintAssignable, Category = "Health")
+	FOnHealthChanged OnHealthChangedDelegate;
 };
 

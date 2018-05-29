@@ -8,12 +8,20 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/Controller.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "UnrealNetwork.h"
 
 //////////////////////////////////////////////////////////////////////////
 // AKCharacter
 
 AKCharacter::AKCharacter()
 {
+	// Make sure we replicate
+	bReplicates = true;
+
+	// Extended setup
+	fCachedMaxHealth = 100.f;
+	fHealth = fCachedMaxHealth;
+
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -47,6 +55,14 @@ AKCharacter::AKCharacter()
 	// are set in the derived blueprint asset named MyCharacter (to avoid direct content references in C++)
 }
 
+void AKCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(AKCharacter, fHealth);
+	DOREPLIFETIME(AKCharacter, fCachedMaxHealth);
+}
+
 //////////////////////////////////////////////////////////////////////////
 // Input
 
@@ -71,25 +87,42 @@ void AKCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputCo
 	// handle touch devices
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &AKCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &AKCharacter::TouchStopped);
-
-	// VR headset functionality
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AKCharacter::OnResetVR);
 }
 
-
-void AKCharacter::OnResetVR()
+float AKCharacter::GetHealth() const
 {
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
+	return fHealth;
+}
+
+float AKCharacter::GetMaxHealth() const
+{
+	return fCachedMaxHealth;
+}
+
+float AKCharacter::GetHealthPct() const
+{
+	return GetMaxHealth() > 0.0f ? GetHealth() / GetMaxHealth() : 1.f;
+}
+
+void AKCharacter::OnRep_Health()
+{
+	BroadcastHealthChanged();
+}
+
+void AKCharacter::BroadcastHealthChanged()
+{
+	OnHealthChangedDelegate.Broadcast(this);
+	OnHealthChangedNativeDelegate.Broadcast(this);
 }
 
 void AKCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
 {
-		Jump();
+	Jump();
 }
 
 void AKCharacter::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
 {
-		StopJumping();
+	StopJumping();
 }
 
 void AKCharacter::TurnAtRate(float Rate)
