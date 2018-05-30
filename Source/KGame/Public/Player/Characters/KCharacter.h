@@ -75,29 +75,40 @@ public:
 ///////////////////
 
 public:
+	/** Returns our Health. */
 	UFUNCTION(BlueprintPure, Category = "Health")
 	virtual float GetHealth() const;
+	/** Returns our CachedMaxHealth. */
 	UFUNCTION(BlueprintPure, Category = "Health")
 	virtual float GetMaxHealth() const;
+	/** Returns our Health % off MaxHealth. */
 	UFUNCTION(BlueprintPure, Category = "Health")
 	float GetHealthPct() const;
 
+	/** Returns our native on health changed delegate. */
 	DECLARE_EVENT_OneParam(AKCharacter, FOnHealthChangedNative, const class AKCharacter*);
 	FOnHealthChangedNative& OnHealthChangedNative() { return OnHealthChangedNativeDelegate; }
+	/** Returns our blueprint on health changed delegate. */
 	FOnHealthChanged& OnHealthChanged() { return OnHealthChangedDelegate; }
 
 protected:
+	/** Called as we're replicating our health. */
 	UFUNCTION()
 	virtual void OnRep_Health();
+	/** Calls our multicast delegates to broadcast our health changed. */
 	void BroadcastHealthChanged();
 
+	/** Health. */
 	UPROPERTY(EditDefaultsOnly, DisplayName = "Health", Category = "Health", ReplicatedUsing = OnRep_Health)
 	float fHealth;
+	/** Initial Max Health cached. */
 	UPROPERTY(EditDefaultsOnly, DisplayName = "MaxHealth", Category = "Health", ReplicatedUsing = OnRep_Health)
 	float fCachedMaxHealth;
 
 private:
+	/** Native On Health Changed Delegate. */
 	FOnHealthChangedNative OnHealthChangedNativeDelegate;
+	/** Blueprint On Health Changed Delegate. */
 	UPROPERTY(BlueprintAssignable, Category = "Health")
 	FOnHealthChanged OnHealthChangedDelegate;
 };
