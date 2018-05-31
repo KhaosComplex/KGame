@@ -99,7 +99,7 @@ float AKCharacter::GetMaxHealth() const
 	return fCachedMaxHealth;
 }
 
-float AKCharacter::GetHealthPct() const
+float AKCharacter::GetHealthPercent() const
 {
 	return GetMaxHealth() > 0.0f ? GetHealth() / GetMaxHealth() : 1.f;
 }

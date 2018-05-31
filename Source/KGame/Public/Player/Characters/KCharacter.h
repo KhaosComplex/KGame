@@ -83,7 +83,7 @@ public:
 	virtual float GetMaxHealth() const;
 	/** Returns our Health % off MaxHealth. */
 	UFUNCTION(BlueprintPure, Category = "Health")
-	float GetHealthPct() const;
+	float GetHealthPercent() const;
 
 	/** Returns our native on health changed delegate. */
 	DECLARE_EVENT_OneParam(AKCharacter, FOnHealthChangedNative, const class AKCharacter*);
