@@ -33,21 +33,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Firing")
 	void FireStandardShot();
 
-	/** Called after we enter the firing state. */
-	virtual void StartFiring();
-	/** Pre fire logic. */
-	virtual void PreFire();
-	/** Pre fire logic that occurs after the delay. */
-	virtual void DelayedPreFire();
-	/** Officially Fire. */
-	virtual void Fire();
-	/** Post fire logic. */
-	virtual void PostFire();
-	/** Post fire logic that occurs after the delay. */
-	virtual void DelayedPostFire();
-	/** Called before leave the firing state. */
-	virtual void EndFiring();
-
 	UFUNCTION(BlueprintImplementableEvent)
 	void ReceiveStartFiring();
 	UFUNCTION(BlueprintImplementableEvent)
@@ -78,6 +63,21 @@ public:
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+
+	/** Called after we enter the firing state. */
+	virtual void StartFiring();
+	/** Pre fire logic. */
+	virtual void PreFire();
+	/** Pre fire logic that occurs after the delay. */
+	virtual void DelayedPreFire();
+	/** Officially Fire. */
+	virtual void Fire();
+	/** Post fire logic. */
+	virtual void PostFire();
+	/** Post fire logic that occurs after the delay. */
+	virtual void DelayedPostFire();
+	/** Called before leave the firing state. */
+	virtual void EndFiring();
 
 	UPROPERTY(BlueprintReadOnly, DisplayName = "Skill Firing State", Category = "State")
 	ESkillFiringState m_eSkillFiringState;
