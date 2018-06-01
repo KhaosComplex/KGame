@@ -23,7 +23,6 @@ void UKSkillComponent::BeginPlay()
 	
 }
 
-
 // Called every frame
 void UKSkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
@@ -32,3 +31,103 @@ void UKSkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 	// ...
 }
 
+void UKSkillComponent::ChangeFiringState(ESkillFiringState NextState)
+{
+	switch (NextState)
+	{
+	case ESkillFiringState::Idle:
+		m_eSkillFiringState = ESkillFiringState::Idle;
+		break;
+	case ESkillFiringState::StartFiring:
+		m_eSkillFiringState = ESkillFiringState::StartFiring;
+		StartFiring();
+		break;
+	case ESkillFiringState::PreFire:
+		m_eSkillFiringState = ESkillFiringState::PreFire;
+		PreFire();
+		break;
+	case ESkillFiringState::DelayedPreFire:
+		m_eSkillFiringState = ESkillFiringState::DelayedPreFire;
+		GetWorld()->GetTimerManager().ClearTimer(m_FireTimer);
+		DelayedPreFire();
+		break;
+	case ESkillFiringState::Fire:
+		m_eSkillFiringState = ESkillFiringState::Fire;
+		Fire();
+		break;
+	case ESkillFiringState::PostFire:
+		m_eSkillFiringState = ESkillFiringState::PostFire;
+		PostFire();
+		break;
+	case ESkillFiringState::DelayedPostFire:
+		m_eSkillFiringState = ESkillFiringState::DelayedPostFire;
+		GetWorld()->GetTimerManager().ClearTimer(m_FireTimer);
+		DelayedPostFire();
+		break;
+	case ESkillFiringState::EndFiring:
+		m_eSkillFiringState = ESkillFiringState::EndFiring;
+		EndFiring();
+		break;
+	}
+}
+
+void UKSkillComponent::FireStandardShot()
+{
+	ChangeFiringState(ESkillFiringState::StartFiring);
+}
+
+void UKSkillComponent::StartFiring()
+{
+	ReceiveStartFiring();
+
+	ChangeFiringState(ESkillFiringState::PreFire);
+}
+
+void UKSkillComponent::PreFire()
+{
+	ReceivePreFire();
+
+	FTimerDelegate TransitionDelegate = FTimerDelegate::CreateUObject(this, &UKSkillComponent::ChangeFiringState, ESkillFiringState::DelayedPreFire);
+	GetWorld()->GetTimerManager().SetTimer(m_FireTimer, TransitionDelegate, m_fPreFireDelay, false);
+}
+
+void UKSkillComponent::DelayedPreFire()
+{
+	ReceiveDelayedPreFire();
+
+	ChangeFiringState(ESkillFiringState::Fire);
+}
+
+void UKSkillComponent::Fire()
+{
+	ReceiveFire();
+
+	ChangeFiringState(ESkillFiringState::PostFire);
+}
+
+void UKSkillComponent::PostFire()
+{
+	ReceivePostFire();
+
+	FTimerDelegate TransitionDelegate = FTimerDelegate::CreateUObject(this, &UKSkillComponent::ChangeFiringState, ESkillFiringState::DelayedPostFire);
+	GetWorld()->GetTimerManager().SetTimer(m_FireTimer, TransitionDelegate, m_fPostFireDelay, false);
+}
+
+void UKSkillComponent::DelayedPostFire()
+{
+	ReceiveDelayedPostFire();
+
+	ChangeFiringState(ESkillFiringState::EndFiring);
+}
+
+void UKSkillComponent::EndFiring()
+{
+	ReceiveEndFiring();
+
+	ChangeFiringState(ESkillFiringState::Idle);
+}
+
+ESkillFiringState UKSkillComponent::GetSkillState() const
+{
+	return m_eSkillFiringState;
+}
