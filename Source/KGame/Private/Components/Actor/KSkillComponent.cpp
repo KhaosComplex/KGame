@@ -6,6 +6,11 @@
 // Sets default values for this component's properties
 UKSkillComponent::UKSkillComponent()
 {
+	// Make sure we replicate
+	SetIsReplicated(true);
+
+	nCurrentSkill = 0;
+
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
@@ -13,6 +18,21 @@ UKSkillComponent::UKSkillComponent()
 	// ...
 }
 
+void UKSkillComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+}
+
+
+UKSkill* UKSkillComponent::GetCurrentSkill() const
+{
+	if (Skills.IsValidIndex(nCurrentSkill))
+	{
+		return Skills[nCurrentSkill];
+	}
+
+	return NULL;
+}
 
 // Called when the game starts
 void UKSkillComponent::BeginPlay()
@@ -87,8 +107,15 @@ void UKSkillComponent::PreFire()
 {
 	ReceivePreFire();
 
-	FTimerDelegate TransitionDelegate = FTimerDelegate::CreateUObject(this, &UKSkillComponent::ChangeFiringState, ESkillFiringState::DelayedPreFire);
-	GetWorld()->GetTimerManager().SetTimer(m_FireTimer, TransitionDelegate, m_fPreFireDelay, false);
+	if (m_fPreFireDelay > 0)
+	{
+		FTimerDelegate TransitionDelegate = FTimerDelegate::CreateUObject(this, &UKSkillComponent::ChangeFiringState, ESkillFiringState::DelayedPreFire);
+		GetWorld()->GetTimerManager().SetTimer(m_FireTimer, TransitionDelegate, m_fPreFireDelay, false);
+	}
+	else
+	{
+		ChangeFiringState(ESkillFiringState::DelayedPreFire);
+	}
 }
 
 void UKSkillComponent::DelayedPreFire()
@@ -109,8 +136,15 @@ void UKSkillComponent::PostFire()
 {
 	ReceivePostFire();
 
-	FTimerDelegate TransitionDelegate = FTimerDelegate::CreateUObject(this, &UKSkillComponent::ChangeFiringState, ESkillFiringState::DelayedPostFire);
-	GetWorld()->GetTimerManager().SetTimer(m_FireTimer, TransitionDelegate, m_fPostFireDelay, false);
+	if (m_fPostFireDelay > 0)
+	{
+		FTimerDelegate TransitionDelegate = FTimerDelegate::CreateUObject(this, &UKSkillComponent::ChangeFiringState, ESkillFiringState::DelayedPostFire);
+		GetWorld()->GetTimerManager().SetTimer(m_FireTimer, TransitionDelegate, m_fPostFireDelay, false);
+	}
+	else
+	{
+		ChangeFiringState(ESkillFiringState::DelayedPostFire);
+	}
 }
 
 void UKSkillComponent::DelayedPostFire()

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "KSkill.h"
 #include "KSkillComponent.generated.h"
 
 UENUM(BlueprintType)
@@ -28,6 +29,7 @@ class KGAME_API UKSkillComponent : public UActorComponent
 public:	
 	// Sets default values for this component's properties
 	UKSkillComponent();
+	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
 	/** Handles all the logic for firing a standard shot. */
 	UFUNCTION(BlueprintCallable, Category = "Firing")
@@ -59,6 +61,15 @@ public:
 	float m_fPreFireDelay;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, DisplayName = "Post Fire Delay", Category = "Firing")
 	float m_fPostFireDelay;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, DisplayName = "Skills", Category = "Skills", Instanced)
+	TArray<UKSkill*> Skills;
+
+	UPROPERTY(BlueprintReadWrite, DisplayName = "Current Skill Index", Category = "Skills")
+	uint8 nCurrentSkill;
+
+	UFUNCTION(BlueprintPure, Category = "Skills")
+	virtual UKSkill* GetCurrentSkill() const;
 
 protected:
 	// Called when the game starts

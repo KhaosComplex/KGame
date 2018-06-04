@@ -6,9 +6,6 @@
 #include "GameFramework/Character.h"
 #include "KCharacter.generated.h"
 
-// Multicast delegates
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnHealthChanged, const class AKCharacter*, Character);
-
 UCLASS(config=Game)
 class AKCharacter : public ACharacter
 {
@@ -70,46 +67,5 @@ public:
 	/** Returns FollowCamera subobject **/
 	FORCEINLINE class UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 
-///////////////////
-// Health
-///////////////////
-
-public:
-	/** Returns our Health. */
-	UFUNCTION(BlueprintPure, Category = "Health")
-	virtual float GetHealth() const;
-	/** Returns our CachedMaxHealth. */
-	UFUNCTION(BlueprintPure, Category = "Health")
-	virtual float GetMaxHealth() const;
-	/** Returns our Health % off MaxHealth. */
-	UFUNCTION(BlueprintPure, Category = "Health")
-	float GetHealthPercent() const;
-
-	/** Returns our native on health changed delegate. */
-	DECLARE_EVENT_OneParam(AKCharacter, FOnHealthChangedNative, const class AKCharacter*);
-	FOnHealthChangedNative& OnHealthChangedNative() { return OnHealthChangedNativeDelegate; }
-	/** Returns our blueprint on health changed delegate. */
-	FOnHealthChanged& OnHealthChanged() { return OnHealthChangedDelegate; }
-
-protected:
-	/** Called as we're replicating our health. */
-	UFUNCTION()
-	virtual void OnRep_Health();
-	/** Calls our multicast delegates to broadcast our health changed. */
-	void BroadcastHealthChanged();
-
-	/** Health. */
-	UPROPERTY(EditDefaultsOnly, DisplayName = "Health", Category = "Health", ReplicatedUsing = OnRep_Health)
-	float fHealth;
-	/** Initial Max Health cached. */
-	UPROPERTY(EditDefaultsOnly, DisplayName = "MaxHealth", Category = "Health", ReplicatedUsing = OnRep_Health)
-	float fCachedMaxHealth;
-
-private:
-	/** Native On Health Changed Delegate. */
-	FOnHealthChangedNative OnHealthChangedNativeDelegate;
-	/** Blueprint On Health Changed Delegate. */
-	UPROPERTY(BlueprintAssignable, Category = "Health")
-	FOnHealthChanged OnHealthChangedDelegate;
 };
 

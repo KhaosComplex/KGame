@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS(Blueprintable)
+UCLASS(Blueprintable, EditInlineNew)
 class KGAME_API UKSkill : public UObject
 {
 	GENERATED_BODY()

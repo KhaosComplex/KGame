@@ -18,10 +18,6 @@ AKCharacter::AKCharacter()
 	// Make sure we replicate
 	bReplicates = true;
 
-	// Extended setup
-	fCachedMaxHealth = 100.f;
-	fHealth = fCachedMaxHealth;
-
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
 
@@ -58,9 +54,6 @@ AKCharacter::AKCharacter()
 void AKCharacter::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-
-	DOREPLIFETIME(AKCharacter, fHealth);
-	DOREPLIFETIME(AKCharacter, fCachedMaxHealth);
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -87,32 +80,6 @@ void AKCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputCo
 	// handle touch devices
 	PlayerInputComponent->BindTouch(IE_Pressed, this, &AKCharacter::TouchStarted);
 	PlayerInputComponent->BindTouch(IE_Released, this, &AKCharacter::TouchStopped);
-}
-
-float AKCharacter::GetHealth() const
-{
-	return fHealth;
-}
-
-float AKCharacter::GetMaxHealth() const
-{
-	return fCachedMaxHealth;
-}
-
-float AKCharacter::GetHealthPercent() const
-{
-	return GetMaxHealth() > 0.0f ? GetHealth() / GetMaxHealth() : 1.f;
-}
-
-void AKCharacter::OnRep_Health()
-{
-	BroadcastHealthChanged();
-}
-
-void AKCharacter::BroadcastHealthChanged()
-{
-	OnHealthChangedDelegate.Broadcast(this);
-	OnHealthChangedNativeDelegate.Broadcast(this);
 }
 
 void AKCharacter::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
